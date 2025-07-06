@@ -1,5 +1,6 @@
 import { AppProps } from 'next/app'
 
+import MainLayout from '@/layouts'
 import QueryClientProvider from '@/providers/QueryClient.provider'
 import RainbowKitProvider from '@/providers/RainbowKit.provider'
 import WagmiProvider from '@/providers/Wagmi.provider'
@@ -12,7 +13,9 @@ export default function App({ Component, pageProps }: AppProps) {
     <WagmiProvider>
       <QueryClientProvider>
         <RainbowKitProvider>
-          <Component {...pageProps} />
+          <MainLayout>
+            <Component {...pageProps} />
+          </MainLayout>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
