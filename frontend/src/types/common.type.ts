@@ -10,3 +10,10 @@ export enum SwapStatus {
   InsufficientBalance = 'INSUFFICIENT_BALANCE',
   ReadyToSwap = 'READY_TO_SWAP',
 }
+
+export type TokenInfoProps = {
+  balance: string
+  symbol: string
+  icon: React.ComponentType
+  rawBalance?: bigint
+}

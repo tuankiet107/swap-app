@@ -1,62 +1,16 @@
-import { useEffect, useState } from 'react'
-import { useAccount } from 'wagmi'
-
-import {
-  DefaultCoinIcon,
-  EthIcon,
-  SpinCircleIcon,
-  SwitchIcon,
-} from '@/components/icons'
+import { SpinCircleIcon, SwitchIcon } from '@/components/icons'
 import SwapButton from '@/components/shared/SwapButton'
 
-import { cn } from '@/utils'
-import env from '@/configs/env.config'
-import supportedChains from '@/configs/supported-chains.config'
+import { useSwapActions } from '@/hooks/useSwapActions'
+import { useSwapData } from '@/hooks/useSwapData'
+import { useSwapState } from '@/hooks/useSwapState'
 
-import { SwapDirection, SwapStatus } from '@/types'
+import { cn } from '@/utils'
 
 export default function Home() {
-  const [direction, setDirection] = useState<SwapDirection>(
-    SwapDirection.EthToToken,
-  )
-  const [status, setStatus] = useState<SwapStatus>(SwapStatus.ReadyToSwap)
-  const [amount, setAmount] = useState<number>(0)
-
-  // TODO: remove when mapping
-  const dummyBalance = 10
-
-  const { isConnected, chain } = useAccount()
-
-  const isEthToToken = direction === SwapDirection.EthToToken
-
-  const handleSwitch = () => {
-    setDirection((prev) =>
-      prev === SwapDirection.EthToToken
-        ? SwapDirection.TokenToEth
-        : SwapDirection.EthToToken,
-    )
-
-    setAmount(0)
-  }
-
-  useEffect(() => {
-    if (!isConnected) {
-      setStatus(SwapStatus.NotConnected)
-      return
-    }
-
-    if (chain?.id !== supportedChains[env][0].id) {
-      setStatus(SwapStatus.WrongNetwork)
-      return
-    }
-
-    if (amount > dummyBalance) {
-      setStatus(SwapStatus.InsufficientBalance)
-      return
-    }
-
-    setStatus(SwapStatus.ReadyToSwap)
-  }, [isConnected, chain, amount])
+  const { direction, amount, setAmount, handleSwitch } = useSwapState()
+  const { fromToken, toToken } = useSwapData(direction)
+  const { status, handleSwap } = useSwapActions(amount, fromToken)
 
   return (
     <div className="w-screen h-full flex justify-center items-center">
@@ -74,8 +28,8 @@ export default function Home() {
               <p>
                 <span className="text-base text-gray-500">Balance </span>
                 <span className="text-blue-700 font-bold">
-                  <span>0.001</span> {/* TODO: Call contract to get symbol */}
-                  <span>{isEthToToken ? 'ETH' : 'MTK'}</span>
+                  <span>{fromToken.balance}</span>{' '}
+                  <span className="font-extrabold">{fromToken.symbol}</span>
                 </span>
               </p>
             </div>
@@ -87,11 +41,12 @@ export default function Home() {
                   className="h-6 text-xl outline-none"
                   placeholder="0"
                   min={0}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  value={amount}
                 />
                 <button className="hover:text-blue-800 font-medium">Max</button>
               </div>
-
-              {isEthToToken ? <EthIcon /> : <DefaultCoinIcon />}
+              <fromToken.icon />
             </div>
           </div>
 
@@ -106,8 +61,8 @@ export default function Home() {
               <p>
                 <span className="text-base text-gray-500">Balance </span>
                 <span className="text-blue-700 font-bold">
-                  <span>0.001</span> {/* TODO: Call contract to get symbol */}
-                  <span>{isEthToToken ? 'MTK' : 'ETH'}</span>
+                  <span>{toToken.balance}</span>{' '}
+                  <span className="font-extrabold">{toToken.symbol}</span>
                 </span>
               </p>
             </div>
@@ -119,14 +74,16 @@ export default function Home() {
                   className="h-6 text-xl outline-none"
                   placeholder="0"
                   min={0}
+                  value={0}
                 />
               </div>
-              {!isEthToToken ? <EthIcon /> : <DefaultCoinIcon />}
+              {/* Sửa từ {toToken.icon} thành <toToken.icon /> */}
+              <toToken.icon />
             </div>
           </div>
         </div>
 
-        <SwapButton status={status} onClick={() => {}} />
+        <SwapButton status={status} onClick={handleSwap} />
       </div>
     </div>
   )
