@@ -6,7 +6,7 @@ export const useSwapState = () => {
   const [direction, setDirection] = useState<SwapDirection>(
     SwapDirection.EthToToken,
   )
-  const [amount, setAmount] = useState<number>(0)
+  const [amount, setAmount] = useState<string>('0')
 
   const handleSwitch = () => {
     setDirection((prev) =>
@@ -14,7 +14,7 @@ export const useSwapState = () => {
         ? SwapDirection.TokenToEth
         : SwapDirection.EthToToken,
     )
-    setAmount(0)
+    setAmount('0')
   }
 
   return {

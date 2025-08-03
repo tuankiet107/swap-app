@@ -1,4 +1,4 @@
-export const swapTokenAbi = [
+export const swapContractAbi = [
   {
     inputs: [{ internalType: 'address', name: '_token', type: 'address' }],
     stateMutability: 'nonpayable',

@@ -8,10 +8,15 @@ import { SwapStatus } from '@/types'
 
 interface SwapButtonProps {
   status: SwapStatus
+  isDisabled: boolean
   onClick: () => void
 }
 
-export default function SwapButton({ status, onClick }: SwapButtonProps) {
+export default function SwapButton({
+  status,
+  onClick,
+  isDisabled,
+}: SwapButtonProps) {
   const { openConnectModal } = useConnectModal()
 
   const buttonLabel = () => {
@@ -29,11 +34,6 @@ export default function SwapButton({ status, onClick }: SwapButtonProps) {
         return 'Swap'
     }
   }
-
-  const isDisabled = [
-    SwapStatus.Loading,
-    SwapStatus.InsufficientBalance,
-  ].includes(status)
 
   const handleClick = () => {
     if (status === SwapStatus.NotConnected) {

@@ -16,4 +16,5 @@ export type TokenInfoProps = {
   symbol: string
   icon: React.ComponentType
   rawBalance?: bigint
+  rawReserve?: bigint
 }

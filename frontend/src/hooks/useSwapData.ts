@@ -4,7 +4,8 @@ import { formatUnits } from 'viem'
 
 import { DefaultCoinIcon, EthIcon } from '@/components/icons'
 
-import { useErc20TokenInfo } from '@/hooks/useErc20TokenInfo'
+import { useGetReserves } from './useGetReserves'
+import { useErc20TokenInfo } from './useErc20TokenInfo'
 
 import { contracts } from '@/configs'
 import { formatNumber } from '@/utils'
@@ -19,6 +20,21 @@ export const useSwapData = (direction: SwapDirection) => {
   const {
     data: { balance: tokenBalance, symbol, decimals },
   } = useErc20TokenInfo(contracts.tokenAddress, userAddress!)
+
+  const { data: rawReserves } = useGetReserves()
+
+  const pools = useMemo(() => {
+    if (rawReserves) {
+      const tokenReserve = formatUnits(rawReserves.tokenReserve, decimals || 18)
+      const ethReserve = formatUnits(rawReserves.ethReserve, 18)
+
+      return {
+        token: tokenReserve,
+        eth: ethReserve,
+      }
+    }
+    return { token: '0', eth: '0' }
+  }, [rawReserves, decimals])
 
   const isEthToToken = direction === SwapDirection.EthToToken
 
@@ -43,6 +59,7 @@ export const useSwapData = (direction: SwapDirection) => {
         symbol: 'ETH',
         icon: EthIcon,
         rawBalance: ethBalance?.value ?? BigInt(0),
+        rawReserve: rawReserves?.ethReserve ?? BigInt(0),
       }
     } else {
       return {
@@ -50,14 +67,17 @@ export const useSwapData = (direction: SwapDirection) => {
         symbol: symbol ?? 'MTK',
         icon: DefaultCoinIcon,
         rawBalance: tokenBalance ?? BigInt(0),
+        rawReserve: rawReserves?.tokenReserve ?? BigInt(0),
       }
     }
   }, [
     isEthToToken,
     formattedEthBalance,
+    ethBalance?.value,
+    rawReserves?.ethReserve,
+    rawReserves?.tokenReserve,
     formattedTokenBalance,
     symbol,
-    ethBalance,
     tokenBalance,
   ])
 
@@ -67,15 +87,23 @@ export const useSwapData = (direction: SwapDirection) => {
         balance: formattedEthBalance,
         symbol: 'ETH',
         icon: EthIcon,
+        rawReserve: rawReserves?.ethReserve ?? BigInt(0),
       }
     } else {
       return {
         balance: formattedTokenBalance,
         symbol: symbol ?? 'MTK',
         icon: DefaultCoinIcon,
+        rawReserve: rawReserves?.tokenReserve ?? BigInt(0),
       }
     }
-  }, [isEthToToken, formattedEthBalance, formattedTokenBalance, symbol])
+  }, [
+    isEthToToken,
+    formattedEthBalance,
+    formattedTokenBalance,
+    symbol,
+    rawReserves,
+  ])
 
   return {
     isConnected,
@@ -83,5 +111,6 @@ export const useSwapData = (direction: SwapDirection) => {
     userAddress,
     fromToken,
     toToken,
+    pools,
   }
 }
