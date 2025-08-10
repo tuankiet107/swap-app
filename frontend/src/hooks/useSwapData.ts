@@ -14,11 +14,12 @@ import { SwapDirection, TokenInfoProps } from '@/types'
 
 export const useSwapData = (direction: SwapDirection) => {
   const { isConnected, chain, address: userAddress } = useAccount()
-  const { data: ethBalance } = useBalance({
+  const { data: ethBalance, refetch: refetchEthBalance } = useBalance({
     address: userAddress,
   })
   const {
     data: { balance: tokenBalance, symbol, decimals },
+    refetch: refetchTokenBalance,
   } = useErc20TokenInfo(contracts.tokenAddress, userAddress!)
 
   const { data: rawReserves } = useGetReserves()
@@ -57,6 +58,7 @@ export const useSwapData = (direction: SwapDirection) => {
       return {
         balance: formattedEthBalance,
         symbol: 'ETH',
+        decimals: 18,
         icon: EthIcon,
         rawBalance: ethBalance?.value ?? BigInt(0),
         rawReserve: rawReserves?.ethReserve ?? BigInt(0),
@@ -65,6 +67,7 @@ export const useSwapData = (direction: SwapDirection) => {
       return {
         balance: formattedTokenBalance,
         symbol: symbol ?? 'MTK',
+        decimals: decimals || 18,
         icon: DefaultCoinIcon,
         rawBalance: tokenBalance ?? BigInt(0),
         rawReserve: rawReserves?.tokenReserve ?? BigInt(0),
@@ -78,6 +81,7 @@ export const useSwapData = (direction: SwapDirection) => {
     rawReserves?.tokenReserve,
     formattedTokenBalance,
     symbol,
+    decimals,
     tokenBalance,
   ])
 
@@ -86,6 +90,7 @@ export const useSwapData = (direction: SwapDirection) => {
       return {
         balance: formattedEthBalance,
         symbol: 'ETH',
+        decimals: decimals || 18,
         icon: EthIcon,
         rawReserve: rawReserves?.ethReserve ?? BigInt(0),
       }
@@ -93,6 +98,7 @@ export const useSwapData = (direction: SwapDirection) => {
       return {
         balance: formattedTokenBalance,
         symbol: symbol ?? 'MTK',
+        decimals: 18,
         icon: DefaultCoinIcon,
         rawReserve: rawReserves?.tokenReserve ?? BigInt(0),
       }
@@ -100,9 +106,11 @@ export const useSwapData = (direction: SwapDirection) => {
   }, [
     isEthToToken,
     formattedEthBalance,
+    decimals,
+    rawReserves?.ethReserve,
+    rawReserves?.tokenReserve,
     formattedTokenBalance,
     symbol,
-    rawReserves,
   ])
 
   return {
@@ -112,5 +120,7 @@ export const useSwapData = (direction: SwapDirection) => {
     fromToken,
     toToken,
     pools,
+    refetchEthBalance,
+    refetchTokenBalance,
   }
 }
