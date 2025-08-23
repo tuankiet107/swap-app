@@ -15,7 +15,12 @@ import { SwapStatus } from '@/types'
 export default function Home() {
   const { direction, amount, setAmount, handleSwitch } = useSwapState()
   const { fromToken, toToken } = useSwapData(direction)
-  const { status, handleSwap } = useSwapActions(amount, fromToken, direction)
+  const { status, handleSwap } = useSwapActions(
+    fromToken,
+    direction,
+    amount,
+    setAmount,
+  )
   const { data: amountOut } = useGetAmountOut(
     amount,
     fromToken?.rawReserve ?? BigInt(0),

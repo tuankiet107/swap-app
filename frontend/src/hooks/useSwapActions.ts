@@ -13,23 +13,28 @@ import supportedChains from '@/configs/supported-chains.config'
 import { SwapDirection, SwapStatus, TokenInfoProps } from '@/types'
 import { useApproveToken } from './useApproveToken'
 import { useAllowance } from './useAllowance'
+import { useSwapData } from './useSwapData'
 
 import { swapContractAbi } from '@/abis/swap-contract.abi'
 
 export const useSwapActions = (
-  amount: string,
   fromToken: TokenInfoProps,
   direction: SwapDirection,
+  amount: string,
+  setAmount: (amount: string) => void,
 ) => {
+  const { refetchEthBalance, refetchTokenBalance, refetchReserves } =
+    useSwapData(direction)
+
   const [status, setStatus] = useState<SwapStatus>(SwapStatus.ReadyToSwap)
   const { isConnected, address: userAddress, chain } = useAccount()
   const {
     writeContract,
-    isPending,
+    isPending: isSwapping,
     isSuccess,
     data: swapHash,
   } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+  const { isLoading: isConfirmingSwap, isSuccess: isSwapConfirmed } =
     useWaitForTransactionReceipt({
       hash: swapHash,
     })
@@ -41,11 +46,34 @@ export const useSwapActions = (
   const { data: allowance, isLoading: isAllowanceLoading } = useAllowance(
     userAddress!,
   )
-  const { approve, isLoading: isApproving } = useApproveToken({
+  const {
+    approve,
+    isLoading: isApproving,
+    approvedHash,
+  } = useApproveToken({
     operator: contracts.swapAmmContract,
     token: contracts.tokenAddress,
     amount: parsedAmount,
   })
+  const { isLoading: isConfirmingApprove } = useWaitForTransactionReceipt({
+    hash: approvedHash,
+  })
+
+  useEffect(() => {
+    if (isSwapConfirmed) {
+      refetchEthBalance()
+      refetchTokenBalance()
+
+      refetchReserves()
+      setAmount('0')
+    }
+  }, [
+    isSwapConfirmed,
+    refetchEthBalance,
+    refetchTokenBalance,
+    refetchReserves,
+    setAmount,
+  ])
 
   useEffect(() => {
     if (!isConnected) {
@@ -58,7 +86,7 @@ export const useSwapActions = (
       return
     }
 
-    if (isApproving || isPending || isConfirming) {
+    if (isApproving || isConfirmingApprove || isSwapping || isConfirmingSwap) {
       setStatus(SwapStatus.Loading)
       return
     }
@@ -79,16 +107,15 @@ export const useSwapActions = (
   }, [
     isConnected,
     chain,
-    amount,
     fromToken.rawBalance,
     direction,
     isAllowanceLoading,
     allowance,
     parsedAmount,
     isApproving,
-    isPending,
-    isConfirming,
-    isConfirmed,
+    isSwapping,
+    isConfirmingSwap,
+    isConfirmingApprove,
   ])
 
   const handleSwap = async () => {
@@ -120,7 +147,8 @@ export const useSwapActions = (
   return {
     status,
     handleSwap,
-    loading: isPending || isConfirming || isApproving,
+    loading:
+      isApproving || isSwapping || isConfirmingApprove || isConfirmingSwap,
     isSuccess,
   }
 }

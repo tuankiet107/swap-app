@@ -13,7 +13,7 @@ import { formatNumber } from '@/utils'
 import { SwapDirection, TokenInfoProps } from '@/types'
 
 export const useSwapData = (direction: SwapDirection) => {
-  const { isConnected, chain, address: userAddress } = useAccount()
+  const { address: userAddress } = useAccount()
   const { data: ethBalance, refetch: refetchEthBalance } = useBalance({
     address: userAddress,
   })
@@ -22,20 +22,7 @@ export const useSwapData = (direction: SwapDirection) => {
     refetch: refetchTokenBalance,
   } = useErc20TokenInfo(contracts.tokenAddress, userAddress!)
 
-  const { data: rawReserves } = useGetReserves()
-
-  const pools = useMemo(() => {
-    if (rawReserves) {
-      const tokenReserve = formatUnits(rawReserves.tokenReserve, decimals || 18)
-      const ethReserve = formatUnits(rawReserves.ethReserve, 18)
-
-      return {
-        token: tokenReserve,
-        eth: ethReserve,
-      }
-    }
-    return { token: '0', eth: '0' }
-  }, [rawReserves, decimals])
+  const { data: rawReserves, refetch: refetchReserves } = useGetReserves()
 
   const isEthToToken = direction === SwapDirection.EthToToken
 
@@ -114,13 +101,10 @@ export const useSwapData = (direction: SwapDirection) => {
   ])
 
   return {
-    isConnected,
-    chain,
-    userAddress,
     fromToken,
     toToken,
-    pools,
     refetchEthBalance,
     refetchTokenBalance,
+    refetchReserves,
   }
 }

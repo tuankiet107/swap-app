@@ -12,8 +12,13 @@ export const useApproveToken = ({
   token,
   amount,
 }: UseApproveTokenProps) => {
-  const { writeContractAsync, isPending, isSuccess, isError } =
-    useWriteContract()
+  const {
+    writeContractAsync,
+    isPending,
+    isSuccess,
+    isError,
+    data: approvedHash,
+  } = useWriteContract()
 
   const approve = () => {
     return writeContractAsync({
@@ -26,6 +31,7 @@ export const useApproveToken = ({
 
   return {
     approve,
+    approvedHash,
     isLoading: isPending,
     isSuccess,
     isError,
