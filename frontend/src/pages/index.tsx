@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { ToastContainer } from 'react-toastify'
 
 import { SpinCircleIcon, SwitchIcon } from '@/components/icons'
 import SwapButton from '@/components/shared/SwapButton'
@@ -41,7 +42,7 @@ export default function Home() {
       <div
         className={cn(
           'w-full max-w-[520px] p-6 flex flex-col gap-4 mx-3',
-          'border border-gray-200 rounded-lg',
+          'border border-gray-200 rounded-lg shadow-[0px_4px_16px_rgba(17,17,26,0.1),_0px_8px_24px_rgba(17,17,26,0.1),_0px_16px_56px_rgba(17,17,26,0.1)]',
         )}
       >
         <h3 className="text-[26px] text-black mobile:text-xl">Swap Token</h3>
@@ -116,6 +117,8 @@ export default function Home() {
           status={status}
           onClick={handleSwap}
         />
+
+        <ToastContainer />
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ import {
   useWriteContract,
 } from 'wagmi'
 import { parseUnits } from 'viem'
+import { toast } from 'react-toastify'
 
 import env from '@/configs/env.config'
 import { contracts } from '@/configs'
@@ -29,7 +30,7 @@ export const useSwapActions = (
   const [status, setStatus] = useState<SwapStatus>(SwapStatus.ReadyToSwap)
   const { isConnected, address: userAddress, chain } = useAccount()
   const {
-    writeContract,
+    writeContractAsync,
     isPending: isSwapping,
     isSuccess,
     data: swapHash,
@@ -66,6 +67,11 @@ export const useSwapActions = (
 
       refetchReserves()
       setAmount('0')
+
+      toast.success('Transaction submitted', {
+        position: 'top-center',
+        autoClose: 5000,
+      })
     }
   }, [
     isSwapConfirmed,
@@ -119,27 +125,40 @@ export const useSwapActions = (
   ])
 
   const handleSwap = async () => {
-    if (direction === SwapDirection.EthToToken) {
-      writeContract({
-        address: contracts.swapAmmContract,
-        abi: swapContractAbi,
-        functionName: 'swapEthToToken',
-        args: [],
-        value: parsedAmount,
-      })
-      return
-    }
+    toast.info('Processing swap...', {
+      position: 'top-center',
+      autoClose: 5000,
+    })
 
-    if (direction === SwapDirection.TokenToEth) {
-      if (allowance !== undefined && allowance < parsedAmount) {
-        await approve()
+    try {
+      if (direction === SwapDirection.EthToToken) {
+        await writeContractAsync({
+          address: contracts.swapAmmContract,
+          abi: swapContractAbi,
+          functionName: 'swapEthToToken',
+          args: [],
+          value: parsedAmount,
+        })
+        return
       }
 
-      writeContract({
-        address: contracts.swapAmmContract,
-        abi: swapContractAbi,
-        functionName: 'swapTokenToEth',
-        args: [parsedAmount],
+      if (direction === SwapDirection.TokenToEth) {
+        if (allowance !== undefined && allowance < parsedAmount) {
+          await approve()
+        }
+
+        await writeContractAsync({
+          address: contracts.swapAmmContract,
+          abi: swapContractAbi,
+          functionName: 'swapTokenToEth',
+          args: [parsedAmount],
+        })
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      toast.error('Transaction failed', {
+        position: 'top-center',
+        autoClose: 5000,
       })
     }
   }
