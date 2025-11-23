@@ -5,7 +5,7 @@ import env from './env.config'
 import supportedChains from './supported-chains.config'
 import walletConnectConfig from './wallet-connect.config'
 
-const { metaMaskWallet, coinbaseWallet, bitgetWallet } = allWallets
+const { metaMaskWallet } = allWallets
 
 const wagmiConfig = getDefaultConfig({
   appName: 'swap-dapp',
@@ -14,7 +14,7 @@ const wagmiConfig = getDefaultConfig({
   wallets: [
     {
       groupName: 'Recommended',
-      wallets: [metaMaskWallet, bitgetWallet, coinbaseWallet],
+      wallets: [metaMaskWallet],
     },
     {
       groupName: 'All',
