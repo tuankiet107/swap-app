@@ -1,5 +1,6 @@
 export * from './contract.config'
 export * from './env.config'
+export * from './seo.config'
 export * from './supported-chains.config'
 export * from './wagmi.config'
 export * from './wallet-connect.config'
